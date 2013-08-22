@@ -74,6 +74,7 @@ function PoolStatus(host,port) {
           if(self.workers[ip].shares.length>samples) {                     
             self.workers[ip].shares = self.workers[ip].shares.slice(1);  
             ghs = ((cur_worker.shares-self.workers[ip].shares[0][0])/(now-self.workers[ip].shares[0][1])*4200).toFixed(2);
+	    if(ghs<0) ghs=0;
           } else {
             ghs = 0;     
           }
