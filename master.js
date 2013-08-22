@@ -69,26 +69,26 @@ app.get('/',function(req,res){
 });
 
 app.get('/blocks',function(req,res){
-    connection(function(db){
-        db.collection('blocks')
-	    .find({'time':{$gte:1375690741000}})
-            .sort({'time':-1})
-	    .toArray(function(err,arr){
-		var blocks = arr.map(function(item){
-		    if(item.size) {
-			return {'hash':item.hash,'time':item.time,'size':item.size,'fee':item.fee,'tx_count':item.tx_count,'orphaned':item.orphaned};
-		    } else {
-			return {'hash':item.hash,'time':item.time,'notfound':true};
-		    }
-		});
-		res.render('blocks',{'blocks':blocks});
-	    });
-    });
+  connection(function(db){
+    db.collection('blocks')
+      .find({'time':{$gte:1375690741000}})
+      .sort({'time':-1})
+      .toArray(function(err,arr){
+	var blocks = arr.map(function(item){
+	  if(item.size) {
+	    return {'hash':item.hash,'time':item.time,'size':item.size,'fee':item.fee,'tx_count':item.tx_count,'orphaned':item.orphaned};
+	  } else {
+	    return {'hash':item.hash,'time':item.time,'notfound':true};
+	  }
+	});
+	res.render('blocks',{'blocks':blocks});
+      });
+  });
 });
 
 var auth = express.basicAuth(function(user, pass, callback) {
- var result = (user === 'asicminer' && pass === 'ngzhangdashabi');
- callback(null /* error */, result);
+  var result = (user === 'asicminer' && pass === 'ngzhangdashabi');
+  callback(null /* error */, result);
 });
 
 var colors = 
@@ -134,63 +134,69 @@ app.get('/servers',auth,function(req,res){
 var connection = require('./connection');
 
 var count = 0;
+var blocks = [];
+var dead = [];
+
 
 var blockchain = require('./blockchain');
 var hash_cache = {};
 
 bayeux.bind('publish', function(clientId, channel, data) {
-    if(channel=='/stat') {
-	count++;
-	if(count>6) {
-	    pools.info = merge.merge(pools.info,data);
-	    var total_ghs = 0;
-	    var blocks = [];
-	    for(var i=0;i<pools.info.length;i++){
-		total_ghs+=parseFloat(pools.info[i].hashrate);
-		blocks = merge.merge2(blocks,pools.info[i].blocks);
-	    }
-	    pools.total_ghs=total_ghs.toFixed(2);
-	    console.log("got message");
-	    console.log(data);
-	    console.log(blocks);
-	    if(pools.info.length>8) {
-		connection(function(db) {
-		    db.collection('hashrate',function(err,col){
-			col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
-		    });
-		    db.collection('blocks',function(err,col){
-			blocks.map(function(block){
-			    if(!hash_cache[block.hash]) {
-				hash_cache[block.hash]=true;
-				console.log("Retrieving block:",block.hash);
-				blockchain.getblock(block.hash,function(res) {
-				    if(!res.notfound) {
-					console.log("Found block!");
-					col.update({'hash':block.hash},
-						   {'hash':block.hash,
-						    'time':+ new Date(block.timestamp),
-						    'size':res.size,
-						    'fee':(parseInt(res.fee)/100000000.0).toFixed(8),
-						    'tx_count':res.n_tx,
-						    'orphaned':!(res.main_chain),
-						    'height':res.height
-						   },
-						   {upsert:true},function(err,res){console.log(err);});
-				    } else {
-					col.update({'hash':block.hash},
-						   {'hash':block.hash,
-						    'time':+ new Date(block.timestamp)
-						   },
-						   {upsert:true},function(err,res){console.log(err);});
-				    }
-				});
-			    }
-			});
-		    });
+  if(channel=='/stat') {
+    count++;
+    if(count>6) {
+      pools.info = merge.merge(pools.info,data);
+      var total_ghs = 0;
+      blocks = [];
+      dead = [];
+      for(var i=0;i<pools.info.length;i++){
+	total_ghs+=parseFloat(pools.info[i].hashrate);
+	blocks = merge.merge2(blocks,pools.info[i].blocks);
+	dead = merge.merge2(dead,pools.info[i].dead);
+      }
+      pools.total_ghs=total_ghs.toFixed(2);
+      console.log("got message");
+      console.log(data);
+      console.log(blocks);
+      console.log(dead);
+      if(pools.info.length>8) {
+	connection(function(db) {
+	  db.collection('hashrate',function(err,col){
+	    col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
+	  });
+	  db.collection('blocks',function(err,col){
+	    blocks.map(function(block){
+	      if(!hash_cache[block.hash]) {
+		hash_cache[block.hash]=true;
+		console.log("Retrieving block:",block.hash);
+		blockchain.getblock(block.hash,function(res) {
+		  if(!res.notfound) {
+		    console.log("Found block!");
+		    col.update({'hash':block.hash},
+			       {'hash':block.hash,
+				'time':+ new Date(block.timestamp),
+				'size':res.size,
+				'fee':(parseInt(res.fee)/100000000.0).toFixed(8),
+				'tx_count':res.n_tx,
+				'orphaned':!(res.main_chain),
+				'height':res.height
+			       },
+			       {upsert:true},function(err,res){console.log(err);});
+		  } else {
+		    col.update({'hash':block.hash},
+			       {'hash':block.hash,
+				'time':+ new Date(block.timestamp)
+			       },
+			       {upsert:true},function(err,res){console.log(err);});
+		  }
 		});
-	    }
-	};
-    }
+	      }
+	    });
+	  });
+	});
+      }
+    };
+  }
 });
 
 var server = app.listen(argv.p);
