@@ -136,7 +136,7 @@ var connection = require('./connection');
 var count = 0;
 var blocks = [];
 var dead = [];
-
+var down = [];
 
 var blockchain = require('./blockchain');
 var hash_cache = {};
@@ -149,16 +149,21 @@ bayeux.bind('publish', function(clientId, channel, data) {
       var total_ghs = 0;
       blocks = [];
       dead = [];
+      down = [];
       for(var i=0;i<pools.info.length;i++){
 	total_ghs+=parseFloat(pools.info[i].hashrate);
 	blocks = merge.merge2(blocks,pools.info[i].blocks);
 	dead = merge.merge2(dead,pools.info[i].dead);
+        if(!pools.info[i].alive) {
+          down.push(pools.info[i].url);
+        }
       }
       pools.total_ghs=total_ghs.toFixed(2);
       console.log("got message");
       console.log(data);
       console.log(blocks);
       console.log(dead);
+      console.log(down);
       if(pools.info.length>8) {
 	connection(function(db) {
 	  db.collection('hashrate',function(err,col){
