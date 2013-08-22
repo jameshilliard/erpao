@@ -28,6 +28,7 @@ function PoolStatus(host,port) {
   this.shares = [];
   this.jobs = 0;
   this.blocks = [];
+  this.dead = [];
   this.start = +new Date();
   this.workers = {};
   this.uptime = {};
@@ -59,46 +60,50 @@ function PoolStatus(host,port) {
       var result = {};
       self.uptime = msec_to_dur(+new Date()-data.start);
       var cur_workers = JSON.parse(data.workers);
-      
-      for(var ip in cur_workers) {
-	var cur_worker = cur_workers[ip];
-	var last_seen = msec_to_dur(new Date() - cur_worker.last_seen);
-	cur_worker.last_seen = last_seen;
-	if(self.workers[ip]) {
-	  var ghs;
-	  if(self.workers[ip].shares.length>=samples) {
-	    self.workers[ip].shares = self.workers[ip].shares.slice(1);  
-	    self.workers[ip].updated = self.workers[ip].updated.slice(1);  
-	    ghs = ((cur_worker.shares-self.workers[ip].shares[0])/(+new Date()-self.workers[ip].updated[0])*1000*4.2).toFixed(2);
-	  } else {
-	    ghs = 0;		     
-	  }
-	  self.workers[ip].shares.push(cur_worker.shares);
-	  self.workers[ip].updated.push(+new Date());
-	  self.workers[ip].ghs = ghs;
-	} else {
-	  self.workers[ip] = cur_worker;
-	  self.workers[ip].shares = [self.workers[ip].shares];
-	  self.workers[ip].updated = [+new Date()];
-	  self.workers[ip].ghs = 0;
-	};
-	self.workers[ip].last_shares = cur_worker.shares;
-      };
-      
-      self.blocks = data.blocks;
+      self.dead = [];
 
-      // self.hashrate = Object.keys(self.workers).reduce(function(prev,cur){return prev+parseFloat(self.workers[cur].ghs);},0).toFixed(2);
-      self.hashrate = (data.shares/(+new Date()-data.start)*1000*4.2).toFixed(2);
+      for(var ip in cur_workers) {
+	var last_seen = msec_to_dur(new Date() - cur_workers[ip].last_seen);
+	if(last_seen.minutes>=1 && ip !== "undefined") self.dead.push(ip);
+        var cur_worker = cur_workers[ip];
+        cur_worker.last_seen = last_seen;
+        var now = +new Date();
+        if(self.workers[ip]) {
+	  self.workers[ip].last_shares = cur_worker.shares;
+          var ghs;
+          if(self.workers[ip].shares.length>samples) {                     
+            self.workers[ip].shares = self.workers[ip].shares.slice(1);  
+            ghs = ((cur_worker.shares-self.workers[ip].shares[0][0])/(now-self.workers[ip].shares[0][1])*4200).toFixed(2);
+          } else {
+            ghs = 0;     
+          }
+          self.workers[ip].shares.push([cur_worker.shares,now]);
+          self.workers[ip].ghs = ghs;                   
+        } else {                   
+          self.workers[ip] = cur_worker;
+          self.workers[ip].last_shares = cur_worker.shares;
+          self.workers[ip].shares = [[self.workers[ip].shares,now]];
+          self.workers[ip].ghs = 0;
+        };
+        self.workers[ip].last_seen = last_seen;
+      }
+
+      self.blocks = data.blocks;
+      self.height = data.height;
+      self.hashrate = Object.keys(self.workers).reduce(function(prev,cur){return prev+parseFloat(self.workers[cur].ghs);},0).toFixed(2);
+      //	self.hashrate = result.workers.reduce(function(prev,cur){return prev+parseFloat(cur.ghs);},0).toFixed(2);
+      //	self.hashrate = (data.shares/(now-data.start)*1000*4.2).toFixed(2);
       self.alive=true;
+
     } else {
       self.alive=false;
     }
   };
-
+  
   this.refresh = function(callback) {
     get_stats(client,self.handle_response);
     callback(self);
   };
-}
+};
 
 module.exports = PoolStatus;

@@ -53,18 +53,23 @@ function send_msg() {
     if(error) {
       console.log(error);process.exit(1);
     };
-    var msg = results.map(function(res){
-      var info =  { url:res.url, alive:res.alive, hashrate:res.hashrate, blocks:res.blocks , workers:Object.keys(res.workers).length };
-      return info;
-    });
-    client.publish('/stat',msg);
+
     count++;
     console.log(count+"  "+new Date());
-    console.log("sent msg:"+JSON.stringify(msg));
+    
+    if(count%10==0) {    
+      var msg = results.map(function(res){
+	var info =  { url:res.url, alive:res.alive, height:res.height, uptime:res.uptime, hashrate:res.hashrate, blocks:res.blocks , dead:res.dead, workers:Object.keys(res.workers).length };
+	return info;
+    });
+      console.log("sent msg:"+JSON.stringify(msg));
+
+      client.publish('/stat',msg);
+    }
   });
 };
 
 
-var interval = 30;
+var interval = 2;
 setInterval(send_msg,interval*1000);
 send_msg();
