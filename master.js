@@ -170,7 +170,7 @@ bayeux.bind('publish', function(clientId, channel, data) {
 	    col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
 	  });
 	  db.collection('blocks',function(err,col){
-	    blocks.map(function(block){
+	    async.map(blocks,function(block){
 	      if(!hash_cache[block.hash]) {
 		hash_cache[block.hash]=true;
 		console.log("Retrieving block:",block.hash);
@@ -196,7 +196,7 @@ bayeux.bind('publish', function(clientId, channel, data) {
 		  }
 		});
 	      }
-	    });
+	    },function(err,result) {});
 	  });
 	});
       }
