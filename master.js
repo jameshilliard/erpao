@@ -4,7 +4,6 @@ var argv = require('optimist')
       .argv;
 
 var express = require('express');
-var cons = require('consolidate');
 var faye = require('faye');
 var async = require('async');
 
@@ -15,9 +14,8 @@ var bayeux = new faye.NodeAdapter({
 
 var merge = require('./merge');
 
-var server_count = 0;
-
 var pools  = {};
+pools.total_ghs = 0;
 pools.info = [];
 
 var app = express();
@@ -31,6 +29,7 @@ app.set('views', __dirname + '/views');
 app.enable('view cache');
 app.engine('html',require('hogan-express'));
 app.set('layout', 'layout');
+app.enable("jsonp callback");
 //app.set('partials', head: "head") # partails using by default on all pages
 
 
@@ -126,6 +125,51 @@ app.get('/servers',auth,function(req,res){
   res.render('servers',{'servers':pools.info});
 });
 
+
+app.get('/getHashRate',function(req,res){
+  res.jsonp({"rate":pools.total_ghs});
+});
+
+var moment = require('moment');
+
+app.get('/getData/(([0-5])?)',function(req,res){
+  var dur = req.params[0];
+  if(dur) {
+    dur = parseInt(dur);
+  } else {
+    dur = 0;
+  }
+  var now = moment();
+  var limit = [
+    1375690741000,
+      +now.subtract('hour',6),
+      +now.subtract('hour',12),
+      +now.subtract('week',1),
+      +now.subtract('month',1)
+  ];
+  connection(function(db){
+    async.parallel({
+      series:function(callback){
+        db.collection('hashrate')
+          .find({'time':{$gte:limit[dur]}})
+          .sort( { '_id' : -1 } )
+          .limit(60480)
+          .toArray(function(err,arr){callback(null,arr);});
+      },
+      blocks:function(callback){
+        db.collection('blocks')
+          .find({'time':{$gte:limit[dur]}})
+          .sort({'time':1})
+          .toArray(function(err,arr){callback(null,arr);});
+      }
+    },function(err,results){
+      var series = results.series.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
+      var blocks = results.blocks.map(function(item){return {'x':item.time,'info':{'hash':item.hash},'y':1};});
+      res.jsonp({"hashrate":series,"blocks":blocks});
+    });
+  });
+});
+
 // app.get('/command/:name', function(req, res) {
 //   bayeux.getClient().publish('/command', {text: req.params.name});
 //   res.send(200);
@@ -205,6 +249,7 @@ bayeux.bind('publish', function(clientId, channel, data) {
 });
 
 var server = app.listen(argv.p);
+
 
 var serverAuth = {
   incoming: function(message, callback) {
