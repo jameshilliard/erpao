@@ -6,6 +6,7 @@
       <th class="alive">Alive</th>
       <th class="workers">Workers</th>
       <th class="hashrate">Hash Rate</th>
+      <th class="height">Height</th>
       <th class="ratio">Ratio</th>
     </tr>  
   </thead>  
@@ -16,9 +17,17 @@
       <td data-title="alive">{{alive}}</td>
       <td data-title="workers">{{workers}}</td>
       <td data-title="hashrate">{{hashrate}}</td>
+      <td data-title="height">{{height}}
       <td data-title="ratio">{{ratio}}</td>
     </tr>  
     {{/servers}}
   </tbody>  
 </table>  
+
+<h3>Dead Blade</h3>
+<table class="table table-striped">
+  {{#dead}}
+  <tr><td>{{url}}</td></tr>
+  {{/dead}}
+</table>
 </div>

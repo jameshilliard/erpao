@@ -4,13 +4,13 @@ var smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail")
 
 var hogan = require("hogan.js");
 
-var templ_boards = hogan.compile("<h3>Failed Boards</h3><table>{{#boards}}<tr><td>{{url}}</td></tr>{{/boards}}</table>");
+var templ_boards = hogan.compile("<h3>They're Dead!</h3><table>{{#boards}}<tr><td>{{url}}</td></tr>{{/boards}}</table>");
 
 // setup e-mail data with unicode symbols
 var mailOptions = {
     from: "Keng Dong<dokeng@sz.com>", // sender address
-    // to: "naituida@foxmail.com, 496731243@qq.com, so_won315@163.com", // list of receivers
-    to : "naituida@foxmail.com",
+//    to: "naituida@foxmail.com, 496731243@qq.com, so_won315@163.com" // list of receivers
+   to : "naituida@foxmail.com"
     // subject: "Test Alert", // Subject line
     // text: "Fix Now", // plaintext body
     // html: "<b>Fix Now</b>" // html body
@@ -45,14 +45,15 @@ function sendBoardsMail(boards) {
     });
 }
 
-var test_boards = [ 
-    '192.168.110.160',
-    '192.168.106.138',
-    '192.168.115.140',
-    '192.168.114.219',
-    '192.168.115.110',
-    '192.168.116.233',
-    '192.168.143.12',
-    '192.168.115.6' ]
+// var test_boards = [ 
+//     '192.168.110.160',
+//     '192.168.106.138',
+//     '192.168.115.140',
+//     '192.168.114.219',
+//     '192.168.115.110',
+//     '192.168.116.233',
+//     '192.168.143.12',
+//     '192.168.115.6' ]
 
-sendBoardsMail(test_boards);
+//sendBoardsMail(test_boards);
+exports.sendBoards = sendBoardsMail;
