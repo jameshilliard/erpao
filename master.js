@@ -14,6 +14,8 @@ var bayeux = new faye.NodeAdapter({
 
 var merge = require('./merge');
 
+var moment = require('moment');
+
 var pools  = {};
 pools.total_ghs = 0;
 pools.info = [];
@@ -70,7 +72,7 @@ app.get('/',function(req,res){
 app.get('/blocks',function(req,res){
   connection(function(db){
     db.collection('blocks')
-      .find({'time':{$gte:1375690741000}})
+      .find({'time':{$gte:moment().subtract('week',1).valueOf()}})
       .sort({'time':-1})
       .toArray(function(err,arr){
 	var blocks = arr.map(function(item){
@@ -119,7 +121,6 @@ app.get('/servers',auth,function(req,res){
     if(index<0) index=0;
     if(!pools.info[i].alive || isNaN(index)) index=9;
     if(index>9) index=9;
-    console.log("ratio:%s,index:%s",ratio,index);
     pools.info[i].color=colors[index];
   };
   res.render('servers',{'servers':pools.info});
