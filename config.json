@@ -4,7 +4,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 173,
+        "expected": 176,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,
@@ -22,7 +22,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 170,
+        "expected": 171,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,
@@ -31,7 +31,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 171,
+        "expected": 172,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,
@@ -40,7 +40,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 163,
+        "expected": 164,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -103,7 +103,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 88,
+        "expected": 89,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -121,7 +121,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 105,
+        "expected": 106,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -130,7 +130,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 108,
+        "expected": 109,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -139,7 +139,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 105,
+        "expected": 106,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -184,7 +184,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 115,
+        "expected": 116,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -238,7 +238,7 @@
             "116.100",
             "116.101"
         ],
-        "expected": 106,
+        "expected": 107,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    

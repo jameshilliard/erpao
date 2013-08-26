@@ -4,7 +4,7 @@
             "116.100",
             "116.101"
         ],
-        "workers": 140,
+        "expected": 140,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,
@@ -13,7 +13,7 @@
             "117.100",
             "117.101"
         ],
-        "workers": 140,
+        "expected": 140,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,
@@ -22,7 +22,7 @@
             "116.100",
             "116.101"
         ],
-        "workers": 138,
+        "expected": 138,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,
@@ -31,7 +31,7 @@
             "116.100",
             "116.101"
         ],
-        "workers": 133,
+        "expected": 133,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,
@@ -40,7 +40,7 @@
             "116.100",
             "116.101"
         ],
-        "workers": 138,
+        "expected": 138,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -49,7 +49,7 @@
             "116.100",
             "116.101"
         ],
-        "workers": 135,
+        "expected": 135,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -58,7 +58,7 @@
             "116.100",
             "116.101"
         ],
-        "workers": 139,
+        "expected": 139,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } ,    
@@ -67,7 +67,7 @@
             "116.100",
             "116.101"
         ],
-        "workers": 136,
+        "expected": 147,
         "location": "Room 2, Row 4, Rack 5",
         "note": ""
     } 
