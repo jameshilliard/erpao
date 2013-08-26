@@ -134,6 +134,7 @@ app.get('/servers',auth,function(req,res){
     if(!pools.info[i].alive || isNaN(index)) index=9;
     if(index>9) index=9;
     pools.info[i].color=colors[index];
+    pools.info[i].expected=room[pools.info[i].url].expected;
   };
   res.render('servers',{'servers':pools.info,'dead':dead.sort(comp_IP).map(function(ip){return {'url':ip};})});
 });
@@ -200,6 +201,11 @@ var hash_cache = {};
 
 var alertBoards = require('./email').sendBoards;
 
+var room1 = require('./config_dk1.json');
+var room2 = require('./config.json');
+
+var room = JSON.parse(JSON.stringify(room1).concat(JSON.stringify(room2)).replace('}{',','));
+
 bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
     count++;
@@ -211,13 +217,15 @@ bayeux.bind('publish', function(clientId, channel, data) {
       dead = [];
       down = [];
 
-      async.map(pools.info,function(info) {
+      async.map(pools.info,function(info,callback) {
         total_ghs+=parseFloat(info.hashrate);
         blocks = merge.merge2(blocks,info.blocks);
         dead = merge.merge2(dead,info.dead);
         if(!info.alive) {
           down.push(info.url);
-        }},function(err,result){
+        };
+        callback(null,null);
+        },function(err,results){
          
         });
 //      if(dead.length>old_dead.length) alertBoards(dead);  
@@ -233,7 +241,7 @@ bayeux.bind('publish', function(clientId, channel, data) {
 	        col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
 	      });
 	      db.collection('blocks',function(err,col){
-	        async.map(blocks,function(block){
+	        async.map(blocks,function(block,callback){
 	          if(!hash_cache[block.hash]) {
 		    hash_cache[block.hash]=true;
 		    console.log("Retrieving block:",block.hash);
@@ -258,8 +266,9 @@ bayeux.bind('publish', function(clientId, channel, data) {
 			           {upsert:true},function(err,res){console.log(err);});
 		      }
 		    });
+                    callback(null,res);
 	          }
-	        },function(err,result) {});
+	        },function(err,results) {console.log(results);});
 	      });
 	    });
           }
