@@ -2,12 +2,14 @@ var blockchain = require('./blockchain');
 
 var connection = require('./connection');
 
+var async = require('async');
+
 
 exports.update_all = function () {
   connection(function(db) {
     db.collection('blocks').find({"size":{$exists:false}})
       .toArray(function(err,blocks){
-        blocks.forEach(function(block){
+        async.map(blocks,function(block,callback){
 	  blockchain.getblock(block.hash,function(res) {
             if(!res.notfound) {
 	      console.log("Updating %s %s",new Date(block.time),block.hash);
@@ -18,9 +20,9 @@ exports.update_all = function () {
 	        'orphaned':!(res.main_chain),
 	        'height':res.height
 	      }},{},function(err,res){console.log(err);});
-            } 
-	  });
-        });
+            }
+            callback(null,{"hash":block.hash,"date":new Date(block.time),"res":res});
+	  });},function(err,results){console.log(results);console.log("end");db.close();});
       });
   });
 };
