@@ -62,6 +62,10 @@ function PoolStatus(host,port) {
       var cur_workers = JSON.parse(data.workers);
       self.dead = [];
 
+      Object.keys(self.workers).map(function(ip){
+	  if(!cur_workers[ip]) self.dead.push(ip);
+      });
+
       for(var ip in cur_workers) {
 	var last_seen = msec_to_dur(new Date() - cur_workers[ip].last_seen);
 	if(last_seen.minutes>=1 && ip !== "undefined") self.dead.push(ip);
