@@ -1,3 +1,4 @@
+
 var argv = require('optimist')
       .usage('Usage: $0 -p [port]')
       .default({'p':80})
@@ -114,30 +115,31 @@ var colors =
 	'#B40418' ];
 
 function comp_IP(a,b) {
-    var num_a = a.split('.');
-    var num_b = b.split('.');
-    var test = (parseInt(num_a[2])*1000+parseInt(num_a[3])) - (parseInt(num_b[2])*1000+parseInt(num_b[3]));
-    if(test>0) {
-  	return 1;
-    } else if(test<0) {
-  	return -1;
-    } else return 0;
+  var num_a = a.split('.');
+  var num_b = b.split('.');
+  var test = (parseInt(num_a[2])*1000+parseInt(num_a[3])) - (parseInt(num_b[2])*1000+parseInt(num_b[3]));
+  if(test>0) {
+    return 1;
+  } else if(test<0) {
+    return -1;
+  } else return 0;
 };
 
 
-app.get('/servers',auth,function(req,res){
-  for(var i=0;i<pools.info.length;i++) {
-    var ratio=(pools.info[i].hashrate/pools.info[i].workers);
-    pools.info[i].ratio= ratio.toFixed(2);
-    var index = (100-Math.floor(parseFloat(ratio)*10));
-    if(index<0) index=0;
-    if(!pools.info[i].alive || isNaN(index)) index=9;
-    if(index>9) index=9;
-    pools.info[i].color=colors[index];
-    pools.info[i].expected=room[pools.info[i].url].expected;
-  };
-  res.render('servers',{'servers':pools.info,'dead':dead.sort(comp_IP).map(function(ip){return {'url':ip};})});
-});
+app.get('/servers'// ,auth
+        ,function(req,res){
+          for(var i=0;i<pools.info.length;i++) {
+            var ratio=(pools.info[i].hashrate/pools.info[i].workers);
+            pools.info[i].ratio= ratio.toFixed(2);
+            var index = (100-Math.floor(parseFloat(ratio)*10));
+            if(index<0) index=0;
+            if(!pools.info[i].alive || isNaN(index)) index=9;
+            if(index>9) index=9;
+            pools.info[i].color=colors[index];
+            pools.info[i].expected=room[pools.info[i].url].expected;
+          };
+          res.render('servers',{'servers':pools.info,'dead':dead.filter(function(x){return (x!="undefined");}).sort(comp_IP).map(function(ip){return {'url':ip};})});
+        });
 
 
 app.get('/getHashRate',function(req,res){
@@ -216,7 +218,7 @@ bayeux.bind('publish', function(clientId, channel, data) {
       blocks = [];
       dead = [];
       down = [];
-
+      
       async.map(pools.info,function(info,callback) {
         total_ghs+=parseFloat(info.hashrate);
         blocks = merge.merge2(blocks,info.blocks);
@@ -225,53 +227,53 @@ bayeux.bind('publish', function(clientId, channel, data) {
           down.push(info.url);
         };
         callback(null,null);
-        },function(err,results){
-         
-        });
-//      if(dead.length>old_dead.length) alertBoards(dead);  
-          pools.total_ghs=total_ghs.toFixed(2);
-          console.log("got message");
-          console.log(data);
-          console.log(blocks);
-          console.log(dead);
-          console.log(down);
-          if(pools.info.length>8) {
-	    connection(function(db) {
-	      db.collection('hashrate',function(err,col){
-	        col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
-	      });
-	      db.collection('blocks',function(err,col){
-	        async.map(blocks,function(block,callback){
-	          if(!hash_cache[block.hash]) {
-		    hash_cache[block.hash]=true;
-		    console.log("Retrieving block:",block.hash);
-		    blockchain.getblock(block.hash,function(res) {
-		      if(!res.notfound) {
-		        console.log("Found block!");
-		        col.update({'hash':block.hash},
-			           {'hash':block.hash,
-				    'time':+ new Date(block.timestamp),
-				    'size':res.size,
-				    'fee':(parseInt(res.fee)/100000000.0).toFixed(8),
-				    'tx_count':res.n_tx,
-				    'orphaned':!(res.main_chain),
-				    'height':res.height
-			           },
-			           {upsert:true},function(err,res){console.log(err);});
-		      } else {
-		        col.update({'hash':block.hash},
-			           {'hash':block.hash,
-				    'time':+ new Date(block.timestamp)
-			           },
-			           {upsert:true},function(err,res){console.log(err);});
-		      }
-		    });
-                    callback(null,res);
-	          }
-	        },function(err,results) {console.log(results);});
-	      });
-	    });
-          }
+      },function(err,results){
+//        if(dead.length>11 & dead.length>old_dead.length) alertBoards(dead);           
+      });
+
+      pools.total_ghs=total_ghs.toFixed(2);
+      console.log("got message");
+      console.log(data);
+      console.log(blocks);
+      console.log(dead);
+      console.log(down);
+      if(pools.info.length>8) {
+	connection(function(db) {
+	  db.collection('hashrate',function(err,col){
+	    col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
+	  });
+	  db.collection('blocks',function(err,col){
+	    async.map(blocks,function(block,callback){
+	      if(!hash_cache[block.hash]) {
+		hash_cache[block.hash]=true;
+		console.log("Retrieving block:",block.hash);
+		blockchain.getblock(block.hash,function(res) {
+		  if(!res.notfound) {
+		    console.log("Found block!");
+		    col.update({'hash':block.hash},
+			       {'hash':block.hash,
+				'time':+ new Date(block.timestamp),
+				'size':res.size,
+				'fee':(parseInt(res.fee)/100000000.0).toFixed(8),
+				'tx_count':res.n_tx,
+				'orphaned':!(res.main_chain),
+				'height':res.height
+			       },
+			       {upsert:true},function(err,res){console.log(err);});
+		  } else {
+		    col.update({'hash':block.hash},
+			       {'hash':block.hash,
+				'time':+ new Date(block.timestamp)
+			       },
+			       {upsert:true},function(err,res){console.log(err);});
+		  }
+                  callback(null,res);
+		});
+	      }
+	    },function(err,results) {console.log(results);});
+	  });
+	});
+      }
 
 
     };
