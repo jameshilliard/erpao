@@ -137,6 +137,11 @@ app.get('/servers'// ,auth
             if(index>9) index=9;
             pools.info[i].color=colors[index];
             pools.info[i].expected=room[pools.info[i].url].expected;
+	    if(pools.info[i].expected - pools.info[i].workers<5) {
+	      pools.info[i].full = true;
+	    } else {
+	      pools.info[i].full = false;
+	    }
           };
           res.render('servers',{'servers':pools.info,'dead':dead.filter(function(x){return (x!="undefined");}).sort(comp_IP).map(function(ip){return {'url':ip};})});
         });
@@ -145,8 +150,6 @@ app.get('/servers'// ,auth
 app.get('/getHashRate',function(req,res){
   res.jsonp({"rate":pools.total_ghs});
 });
-
-var moment = require('moment');
 
 app.get('/getData/(([0-5])?)',function(req,res){
   var dur = req.params[0];

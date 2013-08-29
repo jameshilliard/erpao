@@ -13,6 +13,7 @@
   </thead>  
   <tbody>  
     {{#servers}}
+    {{#full}}
     <tr>  
       <td data-title="url" style="color:{{color}};">{{url}}</td>
       <td data-title="alive">{{alive}}</td>
@@ -21,7 +22,19 @@
       <td data-title="hashrate">{{hashrate}}</td>
       <td data-title="height">{{height}}
       <td data-title="ratio">{{ratio}}</td>
-    </tr>  
+    </tr>
+    {{/full}}
+    {{^full}}
+    <tr>  
+      <td data-title="url" style="color:{{color}};">{{url}}</td>
+      <td data-title="alive">{{alive}}</td>
+      <td data-title="workers" style="color:red">{{workers}}</td>
+      <td data-title="expected" style="color:red">{{expected}}</td>
+      <td data-title="hashrate">{{hashrate}}</td>
+      <td data-title="height">{{height}}
+      <td data-title="ratio">{{ratio}}</td>
+    </tr>
+    {{/full}}
     {{/servers}}
   </tbody>  
 </table>  
