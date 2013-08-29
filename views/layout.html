@@ -34,14 +34,14 @@
             <ul id="menu" class="nav navbar-nav">
               <li id="menu-hashrate"><a href="/">Hash Rate</a></li>
               <li id="menu-blocks"><a href="/blocks">Recent Blocks</a></li>
-              <!-- <li id="menu-stats"><a href="/stats">Statistics</a></li> -->
+              <li id="menu-servers"><a href="/servers">Servers</a></li>
             </ul>
           </div><!--/.nav-collapse -->
 	  <script>
 	    var path = window.location.pathname.slice(1);
 	    if(path=="") $("#menu-hashrate").addClass("active");
 	    if(path=="blocks") $("#menu-blocks").addClass("active");
-	    if(path=="stats") $("#menu-stats").addClass("active");
+	    if(path=="servers") $("#menu-servers").addClass("active");
 	  </script>
 
         </div>
