@@ -4,7 +4,9 @@ var smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail")
 
 var hogan = require("hogan.js");
 
-var templ_boards = hogan.compile("<h3>They're Dead!</h3><table>{{#boards}}<tr><td>{{url}}</td></tr>{{/boards}}</table>");
+var templ_boards = hogan.compile("<h3>{{date}}: Dead Blade</h3><table>{{#boards}}<tr><td>{{url}}</td></tr>{{/boards}}</table>");
+
+var templ_servers = hogan.compile("<h3>{{date}}: Server Down</h3><table>{{#servers}}<tr><td>{{url}}</td></tr>{{/servers}}</table>");
 
 // setup e-mail data with unicode symbols
 var mailOptions = {
@@ -29,11 +31,9 @@ function comp_IP(a,b) {
 };
 
 
-function sendBoardsMail(boards) {
-    var info = boards.sort(comp_IP).map(function(url){return {"url":url}});
-    var html = templ_boards.render({"boards":info});
+function send_html(subject,html) {
     mailOptions.html = html;
-    mailOptions.subject = "Dead Blade";
+    mailOptions.subject = subject;
     console.log(mailOptions);
     smtpTransport.sendMail(mailOptions, function(error, response){
 	if(error){
@@ -44,6 +44,21 @@ function sendBoardsMail(boards) {
 	smtpTransport.close(); 
     });
 }
+
+function sendBoardsMail(boards) {
+    var info = boards.sort(comp_IP).map(function(url){return {"url":url};});
+    var html = templ_boards.render({"boards":info,"date":new Date()});
+    send_html("Dead Blade",html);
+}
+
+
+function sendServersMail(servers) {
+    var info = servers.sort(comp_IP).map(function(url){return {"url":url};});
+    var html = templ_servers.render({"servers":info,"date":new Date()});
+    send_html("Server Down",html);
+}
+
+
 
 // var test_boards = [ 
 //     '192.168.110.160',
@@ -57,3 +72,4 @@ function sendBoardsMail(boards) {
 
 //sendBoardsMail(test_boards);
 exports.sendBoards = sendBoardsMail;
+exports.sendServers = sendServersMail;

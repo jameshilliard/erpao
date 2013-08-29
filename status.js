@@ -60,10 +60,11 @@ function PoolStatus(host,port) {
       var result = {};
       self.uptime = msec_to_dur(+new Date()-data.start);
       var cur_workers = JSON.parse(data.workers);
-      self.dead = [];
 
+      self.dead = [];
+      
       Object.keys(self.workers).map(function(ip){
-	  if(!cur_workers[ip]) self.dead.push(ip);
+	  if(!cur_workers[ip] & ip!="undefined") self.dead.push(ip);
       });
 
       for(var ip in cur_workers) {
@@ -99,6 +100,7 @@ function PoolStatus(host,port) {
       //	self.hashrate = result.workers.reduce(function(prev,cur){return prev+parseFloat(cur.ghs);},0).toFixed(2);
       //	self.hashrate = (data.shares/(now-data.start)*1000*4.2).toFixed(2);
       self.alive=true;
+      self.active_worker = Object.keys(self.workers).length - self.dead.length;
 
     } else {
       self.alive=false;

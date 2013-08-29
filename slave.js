@@ -59,7 +59,7 @@ function send_msg() {
     
     if(count%10==0) {    
       var msg = results.map(function(res){
-	var info =  { url:res.url, alive:res.alive, height:res.height, uptime:res.uptime, hashrate:res.hashrate, blocks:res.blocks , dead:res.dead, workers:Object.keys(res.workers).length };
+	var info =  { url:res.url, alive:res.alive, height:res.height, uptime:res.uptime, hashrate:res.hashrate, blocks:res.blocks , dead:res.dead, workers:res.active_worker};
 	return info;
     });
       console.log("sent msg:"+JSON.stringify(msg));
