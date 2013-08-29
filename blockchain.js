@@ -15,6 +15,7 @@ exports.getblock = function (hash,callback) {
 	res.on('end', function() {
 	    try {
 		var res = JSON.parse(body);
+                res.notfound=false;
 		callback(res);
 	    } catch(e) {
 	        callback({'notfound':true});
