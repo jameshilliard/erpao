@@ -129,14 +129,14 @@ function comp_IP(a,b) {
 app.get('/servers'// ,auth
         ,function(req,res){
           for(var i=0;i<pools.info.length;i++) {
-            var ratio=(pools.info[i].hashrate/pools.info[i].workers);
+            pools.info[i].expected=room[pools.info[i].url].expected;
+            var ratio=(pools.info[i].hashrate/pools.info[i].expected);
             pools.info[i].ratio= ratio.toFixed(2);
             var index = (100-Math.floor(parseFloat(ratio)*10));
             if(index<0) index=0;
             if(!pools.info[i].alive || isNaN(index)) index=9;
             if(index>9) index=9;
             pools.info[i].color=colors[index];
-            pools.info[i].expected=room[pools.info[i].url].expected;
 	    if(pools.info[i].expected - pools.info[i].workers<5) {
 	      pools.info[i].full = true;
 	    } else {
@@ -204,12 +204,16 @@ var down = [];
 var blockchain = require('./blockchain');
 var hash_cache = {};
 
-var alertBoards = require('./email').sendBoards;
+var email = require('./email');
+var alertBoards = email.sendBoards;
+var alertServers = email.sendServers;
 
 var room1 = require('./config_dk1.json');
 var room2 = require('./config.json');
 
 var room = JSON.parse(JSON.stringify(room1).concat(JSON.stringify(room2)).replace('}{',','));
+
+var last_send = +new Date();
 
 bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
@@ -231,7 +235,12 @@ bayeux.bind('publish', function(clientId, channel, data) {
         };
         callback(null,null);
       },function(err,results){
-//        if(dead.length>11 & dead.length>old_dead.length) alertBoards(dead);           
+        var now = +new Date();
+        if(now-last_send>300000) {
+          if(down.length>0) alertServers(down);
+          if(dead.length>5 & dead.length>old_dead.length) alertBoards(dead);           
+          last_send = now;
+        }
       });
 
       pools.total_ghs=total_ghs.toFixed(2);
