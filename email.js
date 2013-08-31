@@ -45,16 +45,18 @@ function send_html(subject,html) {
     });
 }
 
+var moment = require('moment');
+
 function sendBoardsMail(boards) {
     var info = boards.sort(comp_IP).map(function(url){return {"url":url};});
-    var html = templ_boards.render({"boards":info,"date":new Date()});
+    var html = templ_boards.render({"boards":info,"date":moment().zone(-8).toString()});
     send_html("Dead Blade",html);
 }
 
 
 function sendServersMail(servers) {
     var info = servers.sort(comp_IP).map(function(url){return {"url":url};});
-    var html = templ_servers.render({"servers":info,"date":new Date()});
+    var html = templ_servers.render({"servers":info,"date":moment().zone(-8).toString()});
     send_html("Server Down",html);
 }
 
