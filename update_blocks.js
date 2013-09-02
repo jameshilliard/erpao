@@ -11,7 +11,6 @@ var connection = require('./connection');
 var async = require('async');
 
 var moment = require('moment');
-var sleep  = require('sleep');
 var now = moment();
 var day = argv.d
 
@@ -22,7 +21,6 @@ exports.update_all = function () {
         async.map(blocks,function(block,callback){
           console.log(block.hash);
 	  blockchain.getblock(block.hash,function(res) {
-//            sleep.sleep(Math.floor(Math.random()*20));
             console.log(!res.notfound);
             if(!res.notfound) {
 	      console.log("Updating %s %s",new Date(block.time),block.hash);
