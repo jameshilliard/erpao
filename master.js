@@ -44,25 +44,32 @@ app.get('/',function(req,res){
   pools.total_ghs=total_ghs.toFixed(2);
   console.log(total_ghs);
 
+//  var start_time = moment('2013-9-1').subtract('hour',12).valueOf();
+  var start_time = moment('2013-8-1').valueOf();
+
   connection(function(db){
     async.parallel({
       series:function(callback){
         db.collection('hashrate')
-          .find({'time':{$gte:1375690741000}})
+          .find({'time':{$gte:start_time},'rand':{$gte:0.5}})
           .sort( { '_id' : -1 } )
           .limit(60480)
           .toArray(function(err,arr){callback(null,arr);});
       },
       blocks:function(callback){
         db.collection('blocks')
-          .find({'time':{$gte:+new Date()-7*24*60*60*1000}})
+          .find({'time':{$gte:start_time}})
           .sort({'time':1})
           .toArray(function(err,arr){callback(null,arr);});
       }
     },
                    function(err,results){
                      var series = results.series.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
-                     var blocks = results.blocks.map(function(item){return {'x':item.time,'info':{'hash':item.hash},'y':1};});
+		     var series_min = series[0][0];
+
+                     var blocks = results.blocks
+			   .filter(function(item){return item.time>=series_min;})
+			   .map(function(item){return {'x':item.time,'info':{'hash':item.hash},'y':1};});
                      res.render('index',{'rate':(total_ghs/1000).toFixed(4),'series':JSON.stringify(series),'blocks':JSON.stringify(blocks)});                                        
                      
                    });
@@ -151,40 +158,61 @@ app.get('/getHashRate',function(req,res){
   res.jsonp({"rate":pools.total_ghs});
 });
 
-app.get('/getData/(([0-5])?)',function(req,res){
+app.get('/getData/(([0-9]+)?)',function(req,res){
   var dur = req.params[0];
   if(dur) {
     dur = parseInt(dur);
   } else {
     dur = 0;
   }
-  var now = moment();
-  var limit = [
+  var now = moment([2013,8,1]);
+  var limits = [
     1375690741000,
       +now.subtract('hour',6),
       +now.subtract('hour',12),
       +now.subtract('week',1),
       +now.subtract('month',1)
   ];
+  var rands = [
+    0.9999,
+    0.5,
+    0.75,
+    0.98,
+    0.995
+  ];
+  var limit;
+  var rand;
+  if(dur>4 && dur<1375690741000) dur=0;
+  if(dur>1375690741000) {
+    limit = dur;
+    rand = 0;
+  } else {
+    limit = limits[dur];
+    rand = rands[dur];
+  };
+  
   connection(function(db){
     async.parallel({
       series:function(callback){
         db.collection('hashrate')
-          .find({'time':{$gte:limit[dur]}})
+          .find({'time':{$gte:limit},'rand':{$gte:rand}})
           .sort( { '_id' : -1 } )
           .limit(60480)
           .toArray(function(err,arr){callback(null,arr);});
       },
       blocks:function(callback){
         db.collection('blocks')
-          .find({'time':{$gte:limit[dur]}})
+          .find({'time':{$gte:limit}})
           .sort({'time':1})
           .toArray(function(err,arr){callback(null,arr);});
       }
     },function(err,results){
       var series = results.series.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
-      var blocks = results.blocks.map(function(item){return {'x':item.time,'info':{'hash':item.hash},'y':1};});
-      res.jsonp({"hashrate":series,"blocks":blocks});
+      var series_min = series[0] ? series[0][0] : 0;
+      var blocks = results.blocks
+	    .filter(function(item){return item.time>=series_min;})
+	    .map(function(item){return {'x':item.time,'info':{'hash':item.hash},'y':1};});
+      res.jsonp({"date":new Date(limit),"hashrate":series,"blocks":blocks});
     });
   });
 });
