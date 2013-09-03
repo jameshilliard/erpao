@@ -32,7 +32,27 @@ function arrFind(arr,f) {
 }
 
 $(function() {
+    var last_time = + new Date();
     $('#hashrate').highcharts('StockChart', {
+chart : {
+  events : {
+    load : 
+    function() {
+
+      setInterval(function() {
+
+	$.getJSON("/getData/"+last_time+"?callback=?", null, function(data) {
+	  series = series.concat(data.hashrate);
+	  blocks = blocks.concat(data.blocks);
+	  var chart = $('#hashrate').highcharts();
+	  chart.series[0].setData(series);
+	  chart.series[1].setData(blocks);
+	});
+      }, 1000);
+    }
+  }
+},
+
 	rangeSelector : {
 	    buttons: [{
 		type: 'hour',
@@ -126,8 +146,18 @@ formatter: function() {
                   labels:{enabled:false}}	
 	       ]
     });
-    
+    $(".highcharts-button").click(function() {
+    var chart = $('#hashrate').highcharts();
+    var extremes = chart.xAxis[0].getExtremes();
+    var max = extremes.max;
+//    var min = max - parseInt($(this).text());
+//    chart.xAxis[0].setExtremes(min, max);
+//    chart.showResetZoom();
 });
+
+});
+
+
 
 </script>
 
