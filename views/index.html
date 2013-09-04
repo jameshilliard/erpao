@@ -32,7 +32,6 @@ function arrFind(arr,f) {
 }
 
 $(function() {
-    var last_time = + new Date();
     $('#hashrate').highcharts('StockChart', {
 chart : {
   events : {
@@ -40,15 +39,19 @@ chart : {
     function() {
 
       setInterval(function() {
-
+        var last_time = series[series.length-1][0];
 	$.getJSON("/getData/"+last_time+"?callback=?", null, function(data) {
-	  series = series.concat(data.hashrate);
+	  series = series.concat(data.series);
 	  blocks = blocks.concat(data.blocks);
+          console.log(JSON.stringify(data.series));
+          console.log(JSON.stringify(data.blocks));                                  
 	  var chart = $('#hashrate').highcharts();
 	  chart.series[0].setData(series);
 	  chart.series[1].setData(blocks);
+          var rate = series[series.length-1][1];
+          chart.setTitle({'text':'Hash Rate:'+rate.toFixed(4)+'TH/s'});
 	});
-      }, 1000);
+      }, 30000);
     }
   }
 },

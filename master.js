@@ -195,14 +195,14 @@ app.get('/getData/(([0-9]+)?)',function(req,res){
     async.parallel({
       series:function(callback){
         db.collection('hashrate')
-          .find({'time':{$gte:limit},'rand':{$gte:rand}})
+          .find({'time':{$gt:limit},'rand':{$gte:rand}})
           .sort( { '_id' : -1 } )
           .limit(60480)
           .toArray(function(err,arr){callback(null,arr);});
       },
       blocks:function(callback){
         db.collection('blocks')
-          .find({'time':{$gte:limit}})
+          .find({'time':{$gt:limit}})
           .sort({'time':1})
           .toArray(function(err,arr){callback(null,arr);});
       }
@@ -212,7 +212,7 @@ app.get('/getData/(([0-9]+)?)',function(req,res){
       var blocks = results.blocks
 	    .filter(function(item){return item.time>=series_min;})
 	    .map(function(item){return {'x':item.time,'info':{'hash':item.hash},'y':1};});
-      res.jsonp({"date":new Date(limit),"hashrate":series,"blocks":blocks});
+      res.jsonp({"date":new Date(limit),"series":series,"blocks":blocks});
     });
   });
 });
