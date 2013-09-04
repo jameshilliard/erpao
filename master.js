@@ -280,7 +280,7 @@ bayeux.bind('publish', function(clientId, channel, data) {
       if(pools.info.length>8) {
 	connection(function(db) {
 	  db.collection('hashrate',function(err,col){
-	    col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
+	    col.insert({'rate':pools.total_ghs,'time':+new Date(),'rand':Math.random()},{w:1},function(){});
 	  });
 	  db.collection('blocks',function(err,col){
 	    async.map(blocks,function(block,callback){
