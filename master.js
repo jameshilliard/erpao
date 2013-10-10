@@ -232,8 +232,11 @@ var blockchain = require('./blockchain');
 var hash_cache = {};
 
 var email = require('./email');
-var alertBoards = email.sendBoards;
-var alertServers = email.sendServers;
+// var alertBoards = email.sendBoards;
+// var alertServers = email.sendServers;
+
+var alertBoards = function(x){};
+var alertServers = function(x){};
 
 var room = require('./hk.json');
 
