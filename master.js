@@ -1,7 +1,6 @@
-
 var argv = require('optimist')
       .usage('Usage: $0 -p [port]')
-      .default({'p':80})
+      .default({'p':8000})
       .argv;
 
 var express = require('express');
@@ -236,10 +235,7 @@ var email = require('./email');
 var alertBoards = email.sendBoards;
 var alertServers = email.sendServers;
 
-var room1 = require('./config_dk1.json');
-var room2 = require('./config.json');
-
-var room = JSON.parse(JSON.stringify(room1).concat(JSON.stringify(room2)).replace('}{',','));
+var room = require('./hk.json');
 
 var last_send = +new Date();
 
